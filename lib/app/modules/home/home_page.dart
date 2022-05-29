@@ -4,11 +4,14 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:projeto/aoth_service.dart';
 
 class HomePage extends StatefulWidget {
   final String title;
+
   const HomePage({Key? key, this.title = 'HomePage'}) : super(key: key);
+
   @override
   HomePageState createState() => HomePageState();
 }
@@ -21,8 +24,6 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 27, 63, 27),
       appBar: AppBar(
-        centerTitle: true,
-        title: Text("Tarefas",style: GoogleFonts.montserrat(fontSize: 25),),
         backgroundColor: const Color.fromARGB(255, 62, 143, 65),
         actions: [
           Padding(
@@ -53,58 +54,76 @@ class HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: Svg('lib/Assets/background-task.svg'),
-            opacity: 0.1,
-            scale: 0.1)
+      body:Container(
+          decoration: const BoxDecoration(
+              image: DecorationImage(
+                  image: Svg('lib/Assets/background-task.svg'),
+                  opacity: 0.1,
+                  scale: 0.1)),
+          child: StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection("todo")
+                .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                .snapshots(),
+            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                default:
+                  List<DocumentSnapshot> todo = snapshot.data!.docs;
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(10),
+                    itemCount: todo.length,
+                    itemBuilder: (context, index) {
+                      var data = todo[index];
+                      return ListTile(
+                        title: Text(
+                          data['title'],
+                          style: GoogleFonts.openSans(
+                              fontSize: 25, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data['description'],
+                              style: GoogleFonts.openSans(
+                                  fontSize: 15, fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              DateFormat("d 'de' MMMM 'de' y").format(DateTime.parse(data['data'])),
+                              style: GoogleFonts.openSans(
+                                  fontSize: 10, fontWeight: FontWeight.normal),
+                            ),
+                          ],
+                        ),
+                        trailing: Container(
+                          color: Color(data['color']),
+                          width: 10,
+                        ),
+                        leading: TextButton(
+
+                          child: Icon(
+                            Icons.check_box,
+                            size: 40,
+                            color: Color(data['color'])
+                          ),
+                          onPressed: () {
+                            FirebaseFirestore.instance
+                                .doc(data.reference.path)
+                                .delete();
+                          },
+                        ),
+                      );
+                    },
+                  );
+              }
+            },
+          ),
         ),
-        child: StreamBuilder(
-          stream: FirebaseFirestore.instance
-              .collection("todo")
-              .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-              .snapshots(),
-          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-              case ConnectionState.waiting:
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              default:
-                List<DocumentSnapshot> todo = snapshot.data!.docs;
-                return ListView.builder(
-                  padding: const EdgeInsets.all(10),
-                  itemCount: todo.length,
-                  itemBuilder: (context, index) {
-                    var data = todo[index];
-                    return ListTile(
-                      title: Text(
-                        data['title'],
-                        style: GoogleFonts.openSans(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(data['description']
-                      ,style: GoogleFonts.openSans(
-                          fontSize: 10,
-                          fontWeight: FontWeight.normal),),
-                      leading: TextButton(
-                        child: const Icon(Icons.check_box),
-                        onPressed: () {
-                          FirebaseFirestore.instance
-                              .doc(data.reference.path)
-                              .delete();
-                        },
-                      ),
-                    );
-                  },
-                );
-            }
-          },
-        ),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
