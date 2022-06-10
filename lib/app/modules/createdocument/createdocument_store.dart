@@ -1,7 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_triple/flutter_triple.dart';
 
-class CreatedocumentStore extends NotifierStore<Exception, int> {
+class CreatedocumentStore extends NotifierStore<Exception, Color> {
 
-  CreatedocumentStore() : super(0);
 
+  CreatedocumentStore() : super(Colors.green);
+
+  Future<void> setColor(Color newcolor) async{
+    setLoading(true);
+    update(newcolor);
+    setLoading(false);
+  }
 }

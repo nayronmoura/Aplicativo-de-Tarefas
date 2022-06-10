@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -17,7 +18,7 @@ class AuthPageState extends State<AuthPage> {
   final store = Modular.get<AothService>();
   @override
   Widget build(BuildContext context) {
-    if (store.usuario == null) {
+    if (FirebaseAuth.instance.currentUser==null) {
       return Scaffold(
         backgroundColor:const Color.fromARGB(255, 27, 63, 27) ,
           body: CustomPaint(

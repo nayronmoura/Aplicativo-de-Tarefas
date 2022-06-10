@@ -18,7 +18,6 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   final store = Modular.get<AothService>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +67,9 @@ class HomePageState extends State<HomePage> {
             builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
+                  return const Center(
+                    child: Text("Houve algum problema, verifique sua conexão com a internet e tente novamente."),
+                  );
                 case ConnectionState.waiting:
                   return const Center(
                     child: CircularProgressIndicator(),
@@ -105,7 +107,6 @@ class HomePageState extends State<HomePage> {
                           width: 10,
                         ),
                         leading: TextButton(
-
                           child: Icon(
                             Icons.check_box,
                             size: 40,
